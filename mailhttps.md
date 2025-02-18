@@ -874,11 +874,7 @@ The SOTN authenticating scheme expects following values to be transferred in the
 
 - "**key**": the public signing key of the user, needed for verifying the signature. The public key MUST be simple Base64 encoded with padding.
 
-
-
 The advantage of the SOTN scheme is in the lack of passwords, and the use of signed nonces over HTTPS which provides robust protection against both man-in-the-middle and replay attacks.
-
-
 
 Authentication undertakes the following steps:
 
@@ -886,30 +882,20 @@ Authentication undertakes the following steps:
 2. If the service being authenticated is own mail agent, the public key is compared with the same of the user identified.
 3. Finally, the signature of the nonce using the provided public key.
 
-```flowchart
-
-st=>start: Start Authentication
-checkNonce=>condition: Previously Seen Nonce
-isHomeAgent=>condition: User is Local
-verifySignature=>condition: Correct Nonce Signature
-publicKeyMatchesLocal=>condition: Matching Public Key
-reject=>end: Reject
-end=>end: Authenticated
-
-st->checkNonce
-checkNonce(no)->isHomeAgent
-checkNonce(yes)->reject
-
-isHomeAgent(yes)->publicKeyMatchesLocal
-isHomeAgent(no)->verifySignature
-
-verifySignature(yes)->end
-verifySignature(no)->reject
-
-publicKeyMatchesLocal(yes)->verifySignature
-publicKeyMatchesLocal(no)->reject
-
-
+```mermaid
+graph TD;
+    st["Start Authentication"] --> checkNonce{"Previously Seen Nonce?"}
+    checkNonce -- "Yes" --> reject["Reject"]
+    checkNonce -- "No" --> isHomeAgent{"User is Local?"}
+    
+    isHomeAgent -- "Yes" --> publicKeyMatchesLocal{"Matching Public Key?"}
+    isHomeAgent -- "No" --> verifySignature{"Correct Nonce Signature?"}
+    
+    publicKeyMatchesLocal -- "Yes" --> verifySignature
+    publicKeyMatchesLocal -- "No" --> reject
+    
+    verifySignature -- "Yes" --> success["Authenticated"]
+    verifySignature -- "No" --> reject
 ```
 
 ### SOTN Authorization Header Example
@@ -922,8 +908,6 @@ Authorization: SOTN
   signature=pWHxd1/jCwkO5Ao5+sc+xDI01DWER2VAYBKCDEK/LgPBBw;
   key=ZjoCijxLNI2ts3NgQKNyxNR3E+gROmyEFsI8YUGJGZs
 ```
-
-
 
 ## Public API
 
@@ -1026,8 +1010,6 @@ The mail agent responds with either:
 - *HTTP 404 Not Found* status if the link does not exist 
 
 - *HTTP 403 Forbidden* if the mail agent user does not consent to public lookups (*Public-Links* profile field)
-
-
 
 ### Notifications
 
