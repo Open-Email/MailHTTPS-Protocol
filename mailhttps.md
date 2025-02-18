@@ -887,7 +887,7 @@ Authentication undertakes the following steps:
 3. Finally, the signature of the nonce using the provided public key.
 
 ```flowchart
-```flow
+
 st=>start: Start Authentication
 checkNonce=>condition: Previously Seen Nonce
 isHomeAgent=>condition: User is Local
@@ -1129,8 +1129,6 @@ HTTPS GET /mail/HOST_PART/LOCAL_PART/streams/STREAM/messages
 ```
 
 The plaintext response body is expected only with a *HTTP 200 OK* status, as a list of message identifiers, each identifier on its own line. 
-
-
 
 The mail agents are stateless and do not keep state of messages already 
 retrieved. It is important that mail clients preserve state of already retrieved messages so that repeated retrieval of messages of same user does not result in duplicated messages.  
