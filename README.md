@@ -1020,8 +1020,9 @@ The plaintext response body is expected only with a *HTTP 200 OK* status. If the
 
 ### Links
 
-Any user may query any *LOCAL_PART@HOST_PART* user's mail agent for 
-the existence of connection identifier LINK.
+#### Query
+
+A remote user may openly query *LOCAL_PART@HOST_PART* user's mail agent for the existence of connection identifier LINK.
 
 ```
 HTTPS GET /mail/HOST_PART/LOCAL_PART/link/LINK
@@ -1101,8 +1102,6 @@ Common HTTP status responses apply. The plaintext response body is expected only
 
 ##### Retrieve
 
-Each message identifier *MESSAGE_ID*, obtained previously through list messages command, can be used for requesting the messages with that identifier.
-
 Once the list of identifiers of private messages from author *LOCAL_PART@HOST_PART* 
 available for a specific connection identifier *LINK* is obtained, each of the message identifiers *MESSAGE_ID* can be used for retrieving the relevant message from a path below.
 
@@ -1110,7 +1109,7 @@ available for a specific connection identifier *LINK* is obtained, each of the m
 HTTPS GET /mail/HOST_PART/LOCAL_PART/link/LINK/messages/MESSAGE_ID
 ```
 
-Successful *HTTP 200 OK* status response contain reserved Mail/HTTPS headers and the response body contains the message payload.
+Successful *HTTP 200 OK* status response contains reserved Mail/HTTPS headers and the response body contains the message payload.
 
 If the message is unknown, *HTTP 404 Not found* response is returned.
 
@@ -1205,7 +1204,19 @@ Unlike the public counterpart, the messages list API call lists own, authored me
 HTTPS GET /home/HOST_PART/LOCAL_PART/messages
 ```
 
-The response is a simple list of message identifiers (*MID*), separated by a new line.
+The response is a simple list of message identifiers (*MESSAGE_ID*), separated by a new line.
+
+#### Retrieve
+
+Each of the message identifiers *MESSAGE_ID* can be used for retrieving the relevant message from a path below.
+
+```
+HTTPS GET /mail/HOST_PART/LOCAL_PART/link/LINK/messages/MESSAGE_ID
+```
+
+Successful *HTTP 200 OK* status response contains reserved Mail/HTTPS headers and the response body contains the message payload.
+
+If the message is unknown, *HTTP 404 Not found* response is returned.
 
 #### Status
 
@@ -1214,7 +1225,7 @@ Mail agents maintain the delivery status of messages. The list call returns only
 Mail agents are recommended to retain delivery history for 14 to 30 days. Keeping records beyond this period is unnecessary due to potential key rotations.
 
 ```
-HTTPS GET /home/HOST_PART/LOCAL_PART/messages/MID
+HTTPS GET /home/HOST_PART/LOCAL_PART/messages/MESSAGE_ID/deliveries
 ```
 
 The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the timestamp of its first access
@@ -1233,10 +1244,10 @@ Updates to already uploaded messages are not permitted, but messages may be revo
 
 #### Delete
 
-The delete request removes the message with id MID from the mail agent and makes it unavailable from reading by readers, even if they have been previously notified by a notification.
+The delete request removes the message with id *MESSAGE_ID* from the mail agent and makes it unavailable from reading by readers, even if they have been previously notified by a notification.
 
 ```
-HTTPS DELETE /home/HOST_PART/LOCAL_PART/messages/MID
+HTTPS DELETE /home/HOST_PART/LOCAL_PART/messages/MESSAGE_ID
 ```
 
 Response status *HTTP 200 OK* indicates the message has been permanently removed from the mail agent.
