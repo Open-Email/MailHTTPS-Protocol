@@ -806,15 +806,41 @@ Suppression of a contact request is best handled in the email client itself, whi
 
 # Special Usecases
 
-## TODO Forwarding
+## Key Rotations
 
-## TODO Replies
+TODO
 
-## TODO Threading
+## Replies
 
-## TODO Broadcasting
+TODO
 
-### TODO Indexing broadcasts and public replies
+## Forwarding
+
+TODO
+
+## Threading
+
+TODO
+
+## Broadcasting
+
+TODO
+
+### Direct Public Access
+
+TODO
+
+### Public Indexing
+
+TODO
+
+### Re-broadcasting messages
+
+TODO
+
+### Public Replies
+
+TODO
 
 ## Address Expansions
 
@@ -864,9 +890,9 @@ The same authentication method can be conveniently used to both home and remote 
 
 The SOTN authenticating scheme expects following values to be transferred in the '**Authorization**' HTTP request header:
 
-- "**hostname**" for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own hostname, as well requests repeating nonce values.
+- "**host**" for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own hostname, as well requests repeating nonce values.
 
-- "**nonce**": a random nonce, generated locally in the mail client. The nonce is a random string of no less than 32 ASCII characters. The nonce may not repeat for at least 24 hours with the same service.
+- "**value**": a random nonce, generated locally in the mail client. The nonce is a random string of no less than 32 ASCII characters. The nonce may not repeat for at least 24 hours with the same service.
 
 - "**algorithm**": the signing algorithm, consistent with the Mail/HTTPS signing algorithms. 
 
@@ -887,13 +913,13 @@ graph TD;
     st["Start Authentication"] --> checkNonce{"Previously Seen Nonce?"}
     checkNonce -- "Yes" --> reject["Reject"]
     checkNonce -- "No" --> isHomeAgent{"User is Local?"}
-    
+
     isHomeAgent -- "Yes" --> publicKeyMatchesLocal{"Matching Public Key?"}
     isHomeAgent -- "No" --> verifySignature{"Correct Nonce Signature?"}
-    
+
     publicKeyMatchesLocal -- "Yes" --> verifySignature
     publicKeyMatchesLocal -- "No" --> reject
-    
+
     verifySignature -- "Yes" --> success["Authenticated"]
     verifySignature -- "No" --> reject
 ```
@@ -1126,3 +1152,165 @@ HTTPS GET /mail/HOST_PART/LOCAL_PART/messages/MESSAGE_ID
 Successful *HTTP 200 OK* status response contain reserved Mail/HTTPS headers and the response body contains the message payload.
 
 If the message is unknown, *HTTP 404 Not found* response is returned.
+
+## Private API
+
+While the public mail agent API defines interoperability between clients and mail agents of contacts, the private API defines a universal mail  clients communication with home mail agents.All private mail API requests are under the path *"/home"* and must be authenticated. In the following examples, it is assumed that the user's address is *LOCAL_PART@HOST_PART*.
+
+### Authenticated Discovery
+
+A common requirement in mail clients is to try authentication without any operations, as means of checking if authentication setup is correct.
+
+```
+HTTPS HEAD /home/HOST_PART/LOCAL_PART
+```
+
+*HTTP 200 OK* status response represents successful authentication. In case of multiple mail agents are delegated to, at least one must authenticate in order for authentication to be considered successful in mail clients. Failing mail agents should be reported to the user by mail clients.
+
+### Notifications
+
+#### List
+
+The private notifications API lists received third party notifications.
+
+```
+HTTPS GET /home/HOST_PART/LOCAL_PART/notifications
+```
+
+In the response, each notification is listed on its own line as comma separated values
+
+- unique notification identifier, assigned automatically by the mail agent
+
+- the connection link the notification was received for
+
+- author's public signing key, used for delivering the notification.
+
+- the payload sent by authors, containing encrypted author address
+
+Email clients must:
+
+- Verify retrieved notifications before considering them authentic
+
+- Cache notifications locally to ensure same notifications are not repeatedly acted upon
+
+
+
+### Messages
+
+#### List
+
+Unlike the public counterpart, the messages list API call lists own, authored messages, awaiting pickup on the mail agent.
+
+```
+HTTPS GET /home/HOST_PART/LOCAL_PART/messages
+```
+
+The response is a simple list of message identifiers (*MID*), separated by a new line.
+
+#### Status
+
+Mail agents maintain the delivery status of messages. The list call returns only active messages, while the status call should include both active messages and recent reader pickups.
+
+Mail agents are recommended to retain delivery history for 14 to 30 days. Keeping records beyond this period is unnecessary due to potential key rotations.
+
+```
+HTTPS GET /home/HOST_PART/LOCAL_PART/messages/MID
+```
+
+The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the timestamp of its first access
+
+#### Upload
+
+Uploading call makes the authored message available to readers.
+
+```
+HTTPS POST /home/HOST_PART/LOCAL_PART/messages
+```
+
+If the message identifier being uploaded already exists on the mail agent, the call is rejected early with status *HTTP 409 Conflict*. 
+
+Updates to already uploaded messages are not permitted, but messages may be revoked by deleting them using the delete request.
+
+#### Delete
+
+The delete request removes the message with id MID from the mail agent and makes it unavailable from reading by readers, even if they have been previously notified by a notification.
+
+```
+HTTPS DELETE /home/HOST_PART/LOCAL_PART/messages/MID
+```
+
+Response status *HTTP 200 OK* indicates the message has been permanently removed from the mail agent.
+
+
+
+### Profile
+
+User profile is stored and served as a simple textual file on the mail agent. 
+
+Management of profile contents is left entirely to mail clients. The mail agent should however refuse to update a profile with invalid, incomplete or oversized content.
+
+#### Update
+
+```
+HTTPS PUT /home/HOST_PART/LOCAL_PART/profile
+```
+
+### Profile Image
+
+#### Update
+
+User profile image is stored and served as an image file on the mail agent, without any image conversions. The mail agent should refuse to update a profile image with invalid or oversized content.
+
+```
+HTTPS PUT /home/HOST_PART/LOCAL_PART/image
+```
+
+#### Delete
+
+The profile image may be removed, in which case a placeholder can be served by email clients directly.
+
+```
+HTTPS DELETE /home/HOST_PART/LOCAL_PART/image
+```
+
+### Links
+
+Links or connection identifiers are stored on mail agents:
+
+- to synchronize contacts among connecting clients
+
+- to enforce notification restrictions 
+
+- to support contact discovery
+
+#### List
+
+The list call retrieves all user's connection identifiers, which implies all user contacts.
+
+```
+HTTPS GET /home/HOST_PART/LOCAL_PART/links
+```
+
+The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the encrypted email address of the  contact.
+
+#### Store
+
+The store call saves the connection identifier link (*LINK*) on the mail agent of the authenticating user. The request body contains encrypted email address of the respective link contact.
+
+The assumed encryption method is anonymous asymmetric encryption. However, users can configure a different method in their email clients, provided that all of their clients use the same encryption scheme.
+
+```
+HTTPS PUT /home/HOST_PART/LOCAL_PART/links/LINK
+```
+
+Response status *HTTP 200 OK* indicates the link was successfully stored on the mail agent.
+
+#### Delete
+
+The delete call removes the given connection identifier *LINK* of the authenticating user.
+
+```
+HTTPS DELETE /home/HOST_PART/LOCAL_PART/links/LINK
+```
+
+Response status *HTTP 200 OK* indicates the link has been permanently removed from the mail agent.
