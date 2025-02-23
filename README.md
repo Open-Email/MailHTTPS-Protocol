@@ -1,22 +1,145 @@
 # Mail/HTTPS - The OpenEmail Protocol
 
-[TOC]
+- [Preface](#preface)
+- [Introduction](#introduction)
+  - [Complexity](#complexity)
+  - [Deliverability](#deliverability)
+  - [Address Secrecy](#address-secrecy)
+- [The New Terminology](#the-new-terminology)
+  - [Authors and Readers](#authors-and-readers)
+  - [Mail Agents](#mail-agents)
+  - [Email Address](#email-address)
+  - [Public Profile](#public-profile)
+  - [Links](#links)
+  - [Broadcasts](#broadcasts)
+  - [Encryption](#encryption)
+  - [Signing](#signing)
+  - [Keys Rotation](#keys-rotation)
+  - [Authentication](#authentication)
+  - [Notifications](#notifications)
+  - [Message Lifetime](#message-lifetime)
+  - [Storage Separation](#storage-separation)
+  - [Multiplicity](#multiplicity)
+  - [Flow Overview](#flow-overview)
+- [Email Address](#email-address-1)
+  - [Character Set](#character-set)
+  - [Local Part](#local-part)
+  - [Domain Part](#domain-part)
+  - [Display Name](#display-name)
+- [Links](#links-1)
+- [Mail Agent](#mail-agent)
+  - [Discovery](#discovery)
+  - [Optimal Delegation](#optimal-delegation)
+- [Public Profile](#public-profile-1)
+  - [Profile Location](#profile-location)
+  - [Required Fields](#required-fields)
+  - [Optional Fields](#optional-fields)
+  - [Unstructured Fields](#unstructured-fields)
+- [Public Profile Image](#public-profile-image)
+  - [Profile Image Location](#profile-image-location)
+  - [Privacy Concerns](#privacy-concerns)
+- [Encryption & Signing](#encryption-and-signing)
+  - [Key IDs](#key-ids)
+  - [Fingerprints](#fingerprints)
+  - [Anonymous Asymmetric Encryption](#anonymous-asymmetric-encryption)
+  - [Large Message Handling](#large-message-handling)
+  - [Signing](#signing-1)
+- [Message Object](#message-object)
+  - [Lifetime](#lifetime)
+  - [Access Rights](#access-rights)
+  - [Message-Id](#message-id)
+  - [Payload](#payload)
+  - [Encoding](#encoding)
+  - [Plaintext](#plaintext)
+  - [Files (Attachments)](#files-attachments)
+  - [Size](#size)
+  - [Headers](#headers)
+  - [Categorization](#categorization)
+- [Message Envelope](#message-envelope)
+  - [Required Headers](#required-headers)
+  - [Conditional Headers](#conditional-headers)
+  - [Content Headers](#content-headers)
+    - [Mandatory Headers](#mandatory-headers)
+    - [Conditional Headers](#conditional-headers-1)
+- [Notifications](#notifications-1)
+  - [Payload](#payload-1)
+  - [Identifier](#identifier)
+  - [Lifetime](#lifetime-1)
+  - [Verification](#verification)
+  - [Execution](#execution)
+  - [Suppression](#suppression)
+- [Special Usecases](#special-usecases)
+  - [Key Rotations](#key-rotations)
+  - [Replies](#replies)
+  - [Forwarding](#forwarding)
+  - [Threading](#threading)
+  - [Broadcasting](#broadcasting)
+    - [Direct Public Access](#direct-public-access)
+    - [Public Indexing](#public-indexing)
+    - [Re-broadcasting Messages](#re-broadcasting-messages)
+    - [Public Replies](#public-replies)
+  - [Address Expansions](#address-expansions)
+    - [Envelope](#envelope)
+    - [Content Headers](#content-headers-1)
+- [HTTPS API](#https-api)
+  - [Authentication](#authentication-1)
+    - [SOTN Scheme](#sotn-scheme)
+    - [SOTN Authorization Header Example](#sotn-authorization-header-example)
+  - [Public API](#public-api)
+    - [Discovery](#discovery-1)
+      - [Domain](#domain)
+      - [Address](#address)
+    - [Provisioning](#provisioning)
+      - [Create](#create)
+      - [Delete](#delete)
+    - [Profile](#profile)
+    - [Profile Image](#profile-image)
+    - [Links](#links-2)
+      - [Query](#query)
+    - [Notifications](#notifications-2)
+      - [Abuse Prevention](#abuse-prevention)
+    - [Messages](#messages)
+      - [Private Messages](#private-messages)
+        - [List](#list)
+        - [Retrieve](#retrieve)
+      - [Broadcast Messages](#broadcast-messages)
+        - [List](#list-1)
+        - [Retrieve](#retrieve-1)
+  - [Private API](#private-api)
+    - [Authenticated Discovery](#authenticated-discovery)
+    - [Notifications](#notifications-3)
+      - [List](#list-2)
+    - [Messages](#messages-1)
+      - [List](#list-3)
+      - [Retrieve](#retrieve-2)
+      - [Status](#status)
+      - [Upload](#upload)
+      - [Delete](#delete-1)
+    - [Profile](#profile-1)
+      - [Update](#update)
+    - [Profile Image](#profile-image-1)
+      - [Update](#update-1)
+      - [Delete](#delete-2)
+    - [Links](#links-3)
+      - [List](#list-4)
+      - [Store](#store)
+      - [Delete](#delete-3)
 
 # Preface
 
 Legacy email was never intentionally designed; rather, it evolved organically, mimicking physical post-office workflows in a skeuomorphic fashion and inheriting the same underlying paradigms.
 
-It is time to break clean from limitations and vulnerabilities of legacy email, starting from the underlying protocols and assumptions. Here at OpenEmail, we’ve designed a new public, open, decentralized protocol for the privacy and security needs of the modern world.
+It is time to break clean from limitations and vulnerabilities of legacy email, starting from the underlying protocols and assumptions. Here at OpenEmail, we have designed a new public, open, decentralized protocol for the privacy and security needs of the modern world.
 
 Named Mail/HTTPS, it is a pull-based message exchange built on top of HTTPS (HTTP over TLS). By thinking of email as sharing protocol rather than a sending one, HTTP emerges as an ideal medium - just as it was originally designed for sharing information online.
 
-With Mail/HTTPS, running systems becomes no more complex than hosting simple websites, making self-hosting again possible. And since it’s both based on a public and open protocol with open source clients and servers, anyone can adopt, develop, and extend it.
+With Mail/HTTPS, running systems becomes no more complex than hosting simple websites, making self-hosting again possible. And since it is both based on a public and open protocol with open source clients and servers, anyone can adopt, develop, and extend it.
 
-It's about time we forget spam, filtering, provider "trust", IP reputations, blacklists, bounces, phishing, spoofing, 10-25MB limits and waiting for messages to "arrive."
+It's about time we forget spam, filtering, provider "trust", IPreputations, blacklists, bounces, phishing, spoofing, 10-25MBlimits and waiting for messages to "arrive."
 
 Through Mail/HTTPS, OpenEmail brings truly digital native email, defining a new universal public secure channel, for all of us to use.
 
-Having a protocol as an “overlay” on HTTPS tackles the key challenges that plague SMTP-based email - security, authenticity, spam, privacy, size constraints, and message lifecycles.
+Having a protocol as an “overlay” on HTTPS tackles the key challenges that plague SMTP-based email - security, authenticity, spam, privacy, size constraints, and message life cycles.
 
 # Introduction
 
@@ -26,7 +149,7 @@ Mail/HTTPS goes beyond just preventing spam and ensuring end-to-end privacy. It 
 
 ## Complexity
 
-Email, the original killer-app, is a cornerstone of internet communication, yet the traditional push-based SMTP model is increasingly out of step with modern needs. Although many protocol updates (RFCs) have attempted to address issues like spam, phishing, authenticity, reputation and security, these challenges have simply grown in scale alongside email’s overall growth. Yet email use, despite all the negative predictions, just keeps growing.
+Email, the original killer-app, is a cornerstone of internet communication, yet the traditional push-based SMTP model is increasingly out of step with modern needs. Although many protocol updates (RFCs) have attempted to address issues like spam, phishing, authenticity, reputation and security, these challenges have simply grown in scale alongside email's overall growth. Yet email use, despite all the negative predictions, just keeps growing.
 
 Progress remains slow because spam filtering conflicts with privacy demands, and spammers rapidly adapt to every new measure. Email hosting is just becoming both more complex and more expensive, without a solution in sight.
 
@@ -36,9 +159,9 @@ At the same time, email remains crucial to our digital world. It underpins accou
 
 In legacy email context, deliverability is often framed as a top priority - essentially measuring how easily senders can inject emails into our inboxes. Ironically, this contradicts what recipients truly want: by any reasonable standard, we should control what arrives in our inboxes. Yet push-based email grants senders (and their infrastructure) a disproportionate ability to reach us, making filters, blacklists, bounces, and other band-aid solutions a necessity.
 
-It’s time to let go of these obsolete ideas and workarounds.
+It is time to let go of these obsolete ideas and workarounds.
 
-Mail/HTTPS flips this dynamic entirely. Because it’s pull-based, we, the readers, decide whose messages we retrieve and when. The concept of “deliverability” fades away: the inbox control belongs to us, not to the senders or any middlemen.
+Mail/HTTPS flips this dynamic entirely. Because it is pull-based, we, the readers, decide whose messages we retrieve and when. The concept of “deliverability” fades away: the inbox control belongs to us, not to the senders or any middlemen.
 
 ## Address Secrecy
 
@@ -48,7 +171,7 @@ In Mail/HTTPS systems exposing an address does not pose any risks. Unlike in leg
 
 # The New Terminology
 
-Mail/HTTPS is designed to work just like traditional email, so there’s no need to build entirely new email clients or relearn how to communicate. While it maintains familiar functionality, it introduces important changes in terminology for the better, making the email experience more intuitive and user-friendly.
+Mail/HTTPS is designed to work just like traditional email, so there is no need to build entirely new email clients or relearn how to communicate. While it maintains familiar functionality, it introduces important changes in terminology for the better, making the email experience more intuitive and user-friendly.
 
 ## Authors and Readers
 
@@ -66,19 +189,19 @@ In Mail/HTTPS, each domain designates one or more always-online mail agents, muc
 
 Mail/HTTPS retains the traditional addressing scheme used in SMTP-email systems, with minor normalization based on de-facto accepted addressing scheme. This dual usage allows for the convenience of seamlessly transitioning between legacy and Mail/HTTPS systems without the need for significant changes in the user experience.In Mail/HTTPS, each domain designates one or more always-online mail agents, much like the Mail Exchange (MX) hosts in SMTP. However, unlike MX hosts, these agents do not accept inbound messages from others. Instead, they operate in a store-and-forward fashion, only caching outbound messages for retrieval by the intended readers.
 
-In SMTP-email, addresses are known as “email” addresses because of their specific use for emailing.  Addresses, however, serve a wider purpose beyond mere message transmission. “Email” addresses are today fundamental, easily understood digital identity, functioning as the primary identifier and recovery mechanism throughout the online realm.
+In SMTP-email, addresses are known as “email” addresses because of their specific use for emailing. Addresses, however, serve a wider purpose beyond mere message transmission. “Email” addresses are today fundamental, easily understood digital identity, functioning as the primary identifier and recovery mechanism throughout the online realm.
 
 In Mail/HTTPS, addresses represent not only users but also their online accounts, profiles, public information, broadcasts, and data. For simplicity, this document refers to what is traditionally called an “email address” simply as an “address.”
 
 ## Public Profile
 
-Email originated before the rise of the web and social networking platforms that now dominate our personal and professional interactions. In today’s interconnected world, having insights into someone’s current status, availability, and even location is immensely valuable. This information helps establish effective communication and provides context for interactions. Additionally, certain details extend beyond personal contact lists to be publicly visible, enhancing a person’s online presence.
+Email originated before the rise of the web and social networking platforms that now dominate our personal and professional interactions. In today's interconnected world, having insights into someone's current status, availability, and even location is immensely valuable. This information helps establish effective communication and provides context for interactions. Additionally, certain details extend beyond personal contact lists to be publicly visible, enhancing a person's online presence.
 
-In the context of email, it’s crucial to understand if we have the right recipients and their availability before sending messages. Without this awareness, we risk setting incorrect expectations and engaging in ineffective communication.
+In the context of email, it's crucial to understand if we have the right recipients and their availability before sending messages. Without this awareness, we risk setting incorrect expectations and engaging in ineffective communication.
 
 Traditional email systems were not designed to accommodate additional information about email address holders. To address this limitation, various initiatives introduced proprietary add-ons and standards like Web Finger and BIMI. These efforts aimed to provide user information, profile data, or brand images within email communications. However, widespread adoption of these solutions failed to materialize. Consequently, the most common approach to include supplementary information became adding substantial footers to emails or relying on provider-dependent profiles and profile images, lacking standardized enhanced email address information and metadata presentation.
 
-Mail/HTTPS builds on previous efforts to enhance email functionality by introducing user profiles. Each address is linked to a public profile hosted at a standardized URI, which can be directly derived from the email address itself. Profile management is handled by each individual’s mail agents, providing a decentralized yet standardized method for distributing profile information.
+Mail/HTTPS builds on previous efforts to enhance email functionality by introducing user profiles. Each address is linked to a public profile hosted at a standardized URI, which can be directly derived from the email address itself. Profile management is handled by each individual's mail agents, providing a decentralized yet standardized method for distributing profile information.
 
 Public profiles are not only operationally needed for distributing public cryptographic keys, but they also serve as a trust establishing element in the OpenEmail network.
 
@@ -86,9 +209,9 @@ Public profiles are not only operationally needed for distributing public crypto
 
 Mail/HTTPS restricts messaging to parties that have mutually agreed to engage in a message exchange. Messages are shared only among authorized and consenting users, significantly enhancing privacy and security in the communication process.
 
-To protect users from unauthorized messages and preserve the privacy of correspondents’ identities from third parties such as service or infrastructure providers, Mail/HTTPS creates a unique, mutual connection identifier for each email connection between two parties. This identifier, called a “link,” symbolizes the connection and is derived from the two involved addresses.
+To protect users from unauthorized messages and preserve the privacy of correspondents' identities from third parties such as service or infrastructure providers, Mail/HTTPS creates a unique, mutual connection identifier for each email connection between two parties. This identifier, called a “link,” symbolizes the connection and is derived from the two involved addresses.
 
-Mail/HTTPS links ensure that the identities of correspondents remain confidential and undisclosed to email service providers throughout the duration of the email exchange. At the same time, these links allow service providers to apply allowlisting rules, maintaining security without compromising user privacy.
+Mail/HTTPS links ensure that the identities of correspondents remain confidential and undisclosed to email service providers throughout the duration of the email exchange. At the same time, these links allow service providers to apply allow-listing rules, maintaining security without compromising user privacy.
 
 ## Broadcasts
 
@@ -96,17 +219,17 @@ SMTP-based email started as a one-to-one system but was later adapted for multip
 
 However, broadcasting is crucial for both businesses and individuals looking to reach larger audiences - when those recipients agree to receive messages. Because SMTP has no built-in solution for mass messaging, users depend on external “mail blasting” services, which only add to the abuse, complexity, and inefficiency.
 
-Mail/HTTPS bridges this gap with a pull-based system, much like RSS. Instead of pushing messages, authors simply post content, and readers subscribe or unsubscribe at will—using just the author’s address. This approach eliminates the need for broadcasters to manage subscriber lists and ensures that only consenting readers receive messages.
+Mail/HTTPS bridges this gap with a pull-based system, much like RSS. Instead of pushing messages, authors simply post content, and readers subscribe or unsubscribe at will—using just the author's address. This approach eliminates the need for broadcasters to manage subscriber lists and ensures that only consenting readers receive messages.
 
 ## Encryption
 
-In Mail/HTTPS, private messages are protected by public-key cryptography. Each user’s public encryption key is published in their profile, allowing authors to securely encrypt messages so only the intended readers - who hold matching private keys - can decrypt them.
+In Mail/HTTPS, private messages are protected by public-key cryptography. Each user's public encryption key is published in their profile, allowing authors to securely encrypt messages so only the intended readers - who hold matching private keys - can decrypt them.
 
 For messages with multiple readers, Mail/HTTPS uses hybrid encryption:
 
 - A random key is generated to symmetrically encrypt the message content.
 
-- The random key is then encrypted separately with each reader’s public key.
+- The random key is then encrypted separately with each reader's public key.
 
 Because the same random key also encrypts metadata, every part of a private message remains fully confidential, preventing unauthorized access or data leaks.
 
@@ -114,15 +237,15 @@ Only private messages in Mail/HTTPS are encrypted, ensuring that sensitive commu
 
 ## Signing
 
-Encryption alone ensures that only the intended readers can decrypt a message, but it does not guarantee that the message truly comes from the claimed author. To address this, every Mail/HTTPS message - private or broadcast - must include a signature generated by the author’s private signing key. Readers validate this signature using the corresponding public signing key found in the author’s profile.
+Encryption alone ensures that only the intended readers can decrypt a message, but it does not guarantee that the message truly comes from the claimed author. To address this, every Mail/HTTPS message - private or broadcast - must include a signature generated by the author's private signing key. Readers validate this signature using the corresponding public signing key found in the author's profile.
 
 Valid signature confirms that the message genuinely originates from the stated author and has not been altered in transit.
 
 ## Keys Rotation
 
-Encryption and signing key pairs are not meant to be permanent and are periodically rotated (replaced by new pairs). During rotation, the old public signing key remains accessible in the user’s profile alongside the new key, ensuring that any still-pending messages can be properly authenticated. The old encryption key on the other hand does not need to stay public once rotation is complete.
+Encryption and signing key pairs are not meant to be permanent and are periodically rotated (replaced by new pairs). During rotation, the old public signing key remains accessible in the user's profile alongside the new key, ensuring that any still-pending messages can be properly authenticated. The old encryption key on the other hand does not need to stay public once rotation is complete.
 
-Rotation is initiated by the user’s email clients (with explicit user confirmation) and is automatically synchronized across authenticated devices, maintaining security without disrupting ongoing communications.Valid signature confirms that the message genuinely originates from the stated author and has not been altered in transit.
+Rotation is initiated by the user's email clients (with explicit user confirmation) and is automatically synchronized across authenticated devices, maintaining security without disrupting ongoing communications.Valid signature confirms that the message genuinely originates from the stated author and has not been altered in transit.
 
 ## Authentication
 
@@ -134,23 +257,23 @@ Mail/HTTPS eliminates passwords. Instead, it uses the private keys as proof of i
 
 ## Notifications
 
-In a pull-based system like Mail/HTTPS, readers must periodically check (or “poll”) their contacts’ mail agents for new messages. While this ensures privacy and control, frequent polling can be inefficient and is generally used only on a schedule or on demand.
+In a pull-based system like Mail/HTTPS, readers must periodically check (or “poll”) their contacts' mail agents for new messages. While this ensures privacy and control, frequent polling can be inefficient and is generally used only on a schedule or on demand.
 
-To enable first contact and optimize the retrieval of new messages, Mail/HTTPS provides a lightweight notification mechanism. When an author’s email client uploads a message to the author’s mail agent, it also sends direct notifications to each intended reader’s mail agent. These notifications alert the reader to new content without revealing any actual message data.
+To enable first contact and optimize the retrieval of new messages, Mail/HTTPS provides a lightweight notification mechanism. When an author's email client uploads a message to the author's mail agent, it also sends direct notifications to each intended reader's mail agent. These notifications alert the reader to new content without revealing any actual message data.
 
-If a reader has never communicated with the author before, the notification is treated as a contact request once the reader’s email client validates it. Only after the reader approves this request can the actual messages be retrieved. Readers can also choose to refuse notifications from unknown addresses by configuring their mail agents accordingly.
+If a reader has never communicated with the author before, the notification is treated as a contact request once the reader's email client validates it. Only after the reader approves this request can the actual messages be retrieved. Readers can also choose to refuse notifications from unknown addresses by configuring their mail agents accordingly.
 
 ## Message Lifetime
 
-In SMTP-based systems, message delivery is typically attempted for up to 72 hours. If delivery fails during that window, the message “bounces” back to the sender. Once delivered, it sits in the recipient’s mailbox indefinitely - yet there’s no direct proof the user actually read it. This gap has led to “hacks” like web-bugs or trackers embedded in HTML messages.
+In SMTP-based systems, message delivery is typically attempted for up to 72 hours. If delivery fails during that window, the message “bounces” back to the sender. Once delivered, it sits in the recipient's mailbox indefinitely - yet there's no direct proof the user actually read it. This gap has led to “hacks” like web-bugs or trackers embedded in HTML messages.
 
-Mail/HTTPS handles message lifetime differently by caching each message for at least 7 days. Readers can retrieve the message multiple times from any device within this period. If they never pick it up, the message simply doesn’t reach them, and the author sees that it went unread, providing a privacy-friendly form of feedback without disclosing any personal information about the reader’s environment or actions.
+Mail/HTTPS handles message lifetime differently by caching each message for at least 7 days. Readers can retrieve the message multiple times from any device within this period. If they never pick it up, the message simply doesn't reach them, and the author sees that it went unread, providing a privacy-friendly form of feedback without disclosing any personal information about the reader's environment or actions.
 
 ## Storage Separation
 
-Legacy email was originally built on simple remote file transfers, creating a tight link between message delivery and storage. For SMTP email to function, the provider’s online storage effectively serves as the final destination. This setup applies the same security measures to both transfers and archives, which introduces unnecessary complexity and vulnerabilities.
+Legacy email was originally built on simple remote file transfers, creating a tight link between message delivery and storage. For SMTP email to function, the provider's online storage effectively serves as the final destination. This setup applies the same security measures to both transfers and archives, which introduces unnecessary complexity and vulnerabilities.
 
-Mail/HTTPS concerns itself only with transfers of messages, just like HTTP(S) on the web: the delivery destination is each user’s device. Should the user want to sync messages to an online archive, they can do so via their local email client, choosing any compatible service they prefer.
+Mail/HTTPS concerns itself only with transfers of messages, just like HTTP(S) on the web: the delivery destination is each user's device. Should the user want to sync messages to an online archive, they can do so via their local email client, choosing any compatible service they prefer.
 
 ## Multiplicity
 
@@ -175,13 +298,13 @@ graph TD;
 This workflow ensures user control over incoming messages - readers only receive new content from authors they trust, while authors receive clear feedback when a message is (or is not) picked up.
 
 1. **Author Composes Message**: the author creates a message much like in traditional email using an OpenEmail compatible client.
-2. **Add Readers & Verify Profiles**: the author adds intended readers and may check each reader’s profile for accuracy, context and status (e.g., availability).
-3. **Upload Message**: sending the message uploads it to the author’s own mail agent.
-4. **Send Notifications**: once the upload is successful, the author’s email client notifies each reader’s mail agent that a new message is available.
-5. **Accept Notifications**: by default, the reader’s mail agent accepts notifications from unknown links if user settings, defined in the public profile allow. Otherwise, it checks the link against the user’s contacts list stored on the agent. If accepted, the notifications are cached on the mail agent for the maximum allowed message lifetime, which applies also to notifications.
-6. **Fetch & Validate Notifications**: readers’ email clients periodically fetch notifications from their mail agents. The validity and authenticity of each notification is checked, discarding failed ones.
-7. **Fetch Known Contact Messages**: if the notification comes from a known contact (present in the local address book), the reader’s client requests the new message(s) directly from the author’s mail agent. The fetched messages is validate for authenticity, decrypted and shown in the reader’s inbox.
-8. **Handling Unknown Contacts**: notifications from authors not in the address book are displayed as "contact requests,” presenting the author’s address and profile but no actual message content.
+2. **Add Readers & Verify Profiles**: the author adds intended readers and may check each reader's profile for accuracy, context and status (e.g., availability).
+3. **Upload Message**: sending the message uploads it to the author's own mail agent.
+4. **Send Notifications**: once the upload is successful, the author's email client notifies each reader's mail agent that a new message is available.
+5. **Accept Notifications**: by default, the reader's mail agent accepts notifications from unknown links if user settings, defined in the public profile allow. Otherwise, it checks the link against the user's contacts list stored on the agent. If accepted, the notifications are cached on the mail agent for the maximum allowed message lifetime, which applies also to notifications.
+6. **Fetch &Validate Notifications**: readers' email clients periodically fetch notifications from their mail agents. The validity and authenticity of each notification is checked, discarding failed ones.
+7. **Fetch Known Contact Messages**: if the notification comes from a known contact (present in the local address book), the reader's client requests the new message(s) directly from the author's mail agent. The fetched messages is validate for authenticity, decrypted and shown in the reader's inbox.
+8. **Handling Unknown Contacts**: notifications from authors not in the address book are displayed as "contact requests,” presenting the author's address and profile but no actual message content.
 
 Accepting contact requests will add the author's address into local contacts and execute a fetch of any pending messages from the accepted contact.
 There is no explicit rejection of contact requests as the mail agents and clients automatically expire them. Mail clients may however implement own flows of silencing the contact requests.
@@ -190,7 +313,7 @@ There is no explicit rejection of contact requests as the mail agents and client
 
 RFC5322 email addresses have a very liberal format due to historical reasons and long-obsolete features. Mail/HTTPS uses a simplified, reduced address format which curbs unnecessary challenges in validating and parsing, and with it minimizes discrepancies between different systems.
 
-This simplified address format below, commonly in use today, stood the test of time and is adopted by Mail/HTTPS. Mail/HTTPS concerns itself only with transfers of messages, just like HTTP(S) on the web: the delivery destination is each user’s device. Should the user want to sync messages to an online archive, they can do so via their local email client, choosing any compatible service they prefer.
+This simplified address format below, commonly in use today, stood the test of time and is adopted by Mail/HTTPS. Mail/HTTPS concerns itself only with transfers of messages, just like HTTP(S) on the web: the delivery destination is each user's device. Should the user want to sync messages to an online archive, they can do so via their local email client, choosing any compatible service they prefer.
 
 ```
 addr-spec         = local-part "@" hostname
@@ -231,7 +354,7 @@ Mail/HTTPS addresses intentionally do not include display names in the addresses
 
 # Links
 
-The link is generated by taking two addresses, lowercasing them, ordering them alphabetically, concatenating them, and then applying the bare SHA2 hash function defined in RFC 6234, with its result represented in hex encoding.  
+The link is generated by taking two addresses, lower-casing them, ordering them alphabetically, concatenating them, and then applying the bare SHA2 hash function defined in RFC 6234, with its result represented in hex encoding.
 
 The use of SHA2 hash function ensures that the original addresses are transformed into irreversible, fixed-length hash values, protecting the correspondents' identities from direct exposure to the email service providers.
 
@@ -278,15 +401,15 @@ GenerateConnectionIdentifier('user1@domain1.tld', 'user2@domain2.tld') ==
 
 The underlying architecture of Mail/HTTPS functions as a store-and-forward system using always online mail agents, similar to the Mail-Exchange (MX) relays of SMTP based email. This approach is vital for supporting asynchronous communication, enabling messages to be authored and read at different intervals.
 
-Unlike SMTP-email systems that rely on Mail Transfer Agents (MTAs) for message relaying, which involve at least one additional message retransmission, Mail/HTTPS agents do not relay messages further. Mail/HTTPS agents receive messages from users (authors) over HTTPS and store them locally until the designated readers retrieve them and before message expiry time.
+Unlike SMTP-email systems that rely on Mail Transfer Agents (MTAs) for message relaying, which involve at least one additional message re-transmission, Mail/HTTPS agents do not relay messages further. Mail/HTTPS agents receive messages from users (authors) over HTTPS and store them locally until the designated readers retrieve them and before message expiry time.
 
 The HTTP protocol was designed for this exact usage and is conveniently utilized in Mail/HTTPS. Message transmission is achieved through a single HTTP upload and single download per reader, simplifying the process and reducing the risk of message loss or delay. Additionally, messages of any size are instantly available upon upload.
 
 ## Discovery
 
-To initiate communication, communicating parties must first discover location of users’ mail agents.
+To initiate communication, communicating parties must first discover location of users' mail agents.
 
-SMTP based email relies heavily on DNS records to discover the email destination of a given domain, through lookup of MX records. In Mail/HTTPS however, the discovery method serves the opposite purpose, to deduct the source location from where to retrieve messages, profile information for a given address, and finally - where to deliver notifications. Reversing the flow aids authenticity validation  by retrieving messages directly from the origin via strict HTTPS. This may be further improved with a DNSSEC deployment for the domain.
+SMTP based email relies heavily on DNS records to discover the email destination of a given domain, through lookup of MX records. In Mail/HTTPS however, the discovery method serves the opposite purpose, to deduct the source location from where to retrieve messages, profile information for a given address, and finally - where to deliver notifications. Reversing the flow aids authenticity validation by retrieving messages directly from the origin via strict HTTPS. This may be further improved with a DNSSEC deployment for the domain.
 
 Mail/HTTPS intentionally does not use pure DNS based discovery. SMTP email predates the web and is incompatible with its document sharing ideas. To this day, direct interaction with SMTP email services from the web is not possible, which also is fortunate due to its security model.
 
@@ -319,7 +442,7 @@ HTTPS HEAD https://MAIL_AGENT_HOSTNAME/mail/HOST_PART
 
 All determined valid host-names are assumed to have a copy of all users data (profile, links, etc.).
 
-Upon authoring messages, mail clients respect the mail agent delegation setting and store authored messages on at least one of the listed mail agent hosts, respecting order in upload attempts.
+Upon authoring messages, mail clients respect the mail agent delegation setting and store authored messages on at least one of the listed mail agent hosts, respecting order in upload attempts.
 
 When querying and retrieving messages, all mail agent host-names listed in the well-known file are queried.
 
@@ -374,7 +497,7 @@ A standard public email profile should include, at a minimum, the following esse
   
   - "*algorithm*": is the signing algorithm for which the key is suitable. By default, Mail/HTTPS uses algorithm which will be assumed if the attribute is not present.
   
-  - "*value*": contains the base64 encoded public signing key data.
+  - "*value*": contains the BASE64 encoded public signing key data.
 
 - **Updated**: is the ISO 8601 UTC formatted timestamp indicating the time of the last profile update. When using multiple agents, the profile timestamp permits to identify failed synchronizations.
 
@@ -382,13 +505,13 @@ An example minimal profile file follows.
 
 ```
 Name: Curious George 🍌
-Signing-Key: algorithm=ed25519; value=AwzDTCM2GQu56oyFrek0XskQ5FbVHYD8TaFGm/w/kqc=
+Signing-Key: algorithm=ED25519; value=AwzDTCM2GQu56oyFrek0XskQ5FbVHYD8TaFGm/w/kqc=
 Updated: 2023-10-24T19:04:31Z
 ```
 
 ## Optional Fields
 
-Allowing profile owners to freely choose all attributes would result in unstructured data that would pose challenges for programmatic utilization.  Mail/HTTPS defines a set of optional profile attributes which have defined meaning.
+Allowing profile owners to freely choose all attributes would result in unstructured data that would pose challenges for programmatic utilization. Mail/HTTPS defines a set of optional profile attributes which have defined meaning.
 
 The profile attributes do not repeat unless explicitly stated. If non-repeatable attributes are found more than once, only the first occurrence is considered.
 
@@ -406,12 +529,12 @@ Exhaustive list of defined fields follows.
 - **Education**: provides information about the educational background of the profile owner, including schools attended and degrees earned. It is a free-form field.
 - **Encryption-Key**: This field holds the user's public encryption key, required for decrypting messages addressed to the user. Only intended readers can decrypt and read private messages' contents, providing a high level of confidentiality and data protection. An empty or non-present encryption key field indicates that the profile does not accept incoming messages, a feature typically reserved for "no-reply" addresses. The following attributes hold the key data.
     • "*id*": key-pair identifier, common for the private and public key, uniquely identifying the key pair
-    • "*algorithm*": indicating the encryption algorithm for which the key is suitable. By default, Mail/HTTPS uses *curve25519xsalsa20poly1305* algorithm which will be assumed if the attribute is not present.
-    • "*value*": contains the base64 encoded public encryption key data.
+    • "*algorithm*": indicating the encryption algorithm for which the key is suitable. By default, Mail/HTTPS uses *Curve25519XSalsa20Poly1305* algorithm which will be assumed if the attribute is not present.
+    • "*value*": contains the BASE64 encoded public encryption key data.
 - **Gender**: represents the gender identity or gender expression of the profile owner. It is a free-form field.
 - **Interests**: lists hobbies, activities, or topics of interest that the profile owner has indicated. It is a free-form field.
 - **Job-Title**: describes the job title or position held by the profile owner within their organization. It is a free-form field.
-- **Languages**: indicates the languages spoken or understood by the profile owner. It is a free-form field.
+- **Languages**:indicates the languages spoken or understood by the profile owner. It is a free-form field.
 - **Last-Seen-Public**: a special, configuration field indicating whether the mail agent should track and make public the time of last email action. Possible valid values are "*Yes*" and "*No*". The field assumes value "Yes" if not present or invalid.
 - **Last-Signing-Key**: provides user's previous signing key and is present after key rotations. The field serves the purpose of verifying messages that were authored during key rotations, as well verifying the user's own API requests on mail agents that are still awaiting key updates. Unlike the signing key, the last encryption key is published rotations and is not present in the profile. Temporary storage of the last encryption key is responsibility of email clients.
 - **Location**: may indicate the geographical location such as address or GPS coordinates of the profile owner. It is a free-form field.
@@ -462,25 +585,25 @@ In SMTP-email, images are commonly used within HTML messages as "web-bugs" to tr
 
 Mail/HTTPS relies on a hybrid combination of asymmetric and symmetric ciphers. The message content and metadata in private messages is first encrypted using symmetric ciphers, effectively avoiding duplication of data when multiple readers are present. The strong random symmetric cipher key used is then encrypted using asymmetric ciphers using each reader's public encryption key.
 
-Both public (broadcasts) and private messages are signed using asymmetric keys.
+Both public (broadcasts)and private messages are signed using asymmetric keys.
 
 To ensure adaptability to future developments and prevent the need for versioning, Mail/HTTPS does not lock itself into specific algorithms. It anticipates that algorithms will advance over time and change will be necessary. What remains consistent is the utilization of a combination of asymmetric and symmetric ciphers.
 
 The headers of Mail/HTTPS messages list which ciphers were used for encrypting and signing payloads.
 
-Minimum required algorithms are *sha256* for checksum, *xchacha20poly1305* for symmetric encryption, *curve25519xsalsa20poly1305* for asymmetric encryption and *ed25519* for signing. All of these algorithms are conveniently available as a part of the popular [LibSodium](https://libsodium.gitbook.io) library.
+Minimum required algorithms are *SHA256* for checksum, *XChaCha20-Poly1305* for symmetric encryption, *Curve25519XSalsa20Poly1305* for asymmetric encryption and *ED25519* for signing. All of these algorithms are conveniently available as a part of the popular [LibSodium](https://libsodium.gitbook.io) library.
 
 ## Key IDs
 
-Key pairs used for encryption and signing are not meant to be permanent. As described previously, the keys are rotated periodically by email clients.
+Key pairs used for encryption and signing are not meant to be permanent.As described previously, the keys are rotated periodically by email clients.
 
 During such rotations, at least for the maximum message lifetime, two key pairs may be referenced. To distinguish between the two in email clients, key identifiers are introduced. These identifiers are meant to be simple and common, to avoid their usage in determining reader identity. Ideally, they are nothing but simple incremental counters starting from 1.
 
 ## Fingerprints
 
-Mail/HTTPS, as we will see later in this document, needs to compare keys. Instead of using the full keys in comparison, only sha256 hashes are compared . We simply call those hashes key fingerprints.
+Mail/HTTPS, as we will see later in this document, needs to compare keys. Instead of using the full keys in comparison, only SHA256 hashes are compared . We simply call those hashes key fingerprints.
 
-## Anonymous Asymmetric Encryption
+## Anonymous AsymmetricEncryption
 
 Asymmetric encryption is used for encrypting the symmetric encryption key which is previously used for sealing the message payload and headers.
 
@@ -488,17 +611,17 @@ Instead of using author's own private encryption key, we use a newly generated a
 
 Such encryption using ephemeral keys does not authenticate messages. Authenticity is instead determined through signatures.
 
-Libsodium library implements a ready primitive called *Anonymous Box*, based on *Curve25519*, *XSalsa20* and *Poly1305* for asymmetric key encryption of small data, which Mail/HTTPS conveniently takes as default and minimum asymmetric encryption algorithm.
+LibSodium library implements a ready primitive called *Anonymous Box*, based on *Curve25519*, *XSalsa20* and *Poly1305* for asymmetric key encryption of small data, which Mail/HTTPS conveniently takes as default and minimum asymmetric encryption algorithm.
 
 ## Large Message Handling
 
-Mail/HTTPS supports messages of any size. However, very large messages can be challenging to decrypt and store on devices with limited processing power or storage. Although streaming encryption is compatible with Mail/HTTPS, it doesn’t allow parallel decryption for large payloads.
+Mail/HTTPS supports messages of any size. However, very large messages can be challenging to decrypt and store on devices with limited processing power or storage. Although streaming encryption is compatible with Mail/HTTPS, it doesn't allow parallel decryption for large payloads.
 
 To address this, Mail/HTTPS splits large messages (such as those with big attachments) into chunks of up to 64 MB each, which are encrypted individually. This design accommodates both ends of the hardware spectrum, supporting low-powered devices which can decrypt smaller chunks more comfortably without running out of memory, just as more capable devices which can speed things up by parallelizing both the download and decryption of individual chunks.
 
 ## Signing
 
-Mail/HTTPS messages embed author signatures of both headers and payload. The same are computed as cryptographic signatures of binary *sha256* checksum of the given data. Care should be taken not to sign hexadecimal data representation instead of the binary checksum data.
+Mail/HTTPS messages embed author signatures of both headers and payload. The same are computed as cryptographic signatures of binary *SHA256* checksum of the given data. Care should be taken not to sign hexadecimal data representation instead of the binary checksum data.
 
 # Message Object
 
@@ -547,7 +670,7 @@ The responsibility for message confidentiality is effectively shifted to the int
 
 ## Encoding
 
-SMTP-email uses MIME for encoding messages and allows use of character sets other than ASCII. It also permits embedding additional content into single messages. This is historical bagage and has made email messages unnecessarily complicated.
+SMTP-email uses MIME for encoding messages and allows use of character sets other than ASCII. It also permits embedding additional content into single messages. This is historical baggage and has made email messages unnecessarily complicated.
 
 HTTP, on which Mail/HTTPS relies, can handle multipart bodies, but this involves complex encoding, decoding, and parsing steps. This complexity is burdensome for both server and client development and is inefficient for large files. Additionally, multipart message segments cannot be sent simultaneously, a strategy that typically speeds up data transfer.
 
@@ -559,7 +682,7 @@ Embedded message content is presented to the reader in its raw, text form, witho
 
 Mail/HTTPS forbids HTML and similar markup languages which may load remote content or mask link destinations. Any remote content can be easily linked to or included as attachment instead.
 
-Clients can support a subset of MarkDown, removing support for remote content (images) and links masking. Clients can however support Base64 encoded images within MarkDown bodies. The recommended maximum size of Base64 encoded image source is 256KB, though clients can apply own limits.
+Clients can support a subset of MarkDown, removing support for remote content (images) and links masking. Clients can however support BASE64 encoded images within MarkDown bodies. The recommended maximum size of BASE64 encoded image source is 256KB, though clients can apply own limits.
 
 ## Files (Attachments)
 
@@ -632,7 +755,7 @@ We define standard categories for mail object below.
 
 Envelope headers are conveniently provided as HTTP headers during uploads/downloads. In private messages, they do not reveal any information about the payload or the communicating party. Broadcast (public) messages on the other hand do not attempt to hide the content or the meta-data and instead focus on origin authentication.
 
-As specified in [RFC2616](https://datatracker.ietf.org/doc/html/rfc2616), HTTP header keys are case insensitive, which reflects also to Mail/HTTPS.
+As specified in [RFC2616](https://datatracker.ietf.org/doc/html/rfc2616), HTTPheader keys are case insensitive, which reflects also to Mail/HTTPS.
 
 ## Required Headers
 
@@ -642,15 +765,15 @@ The following headers are mandatory in all messages.
 
 - **Message-Id**: the unique message identifier.
 
-- **Message-Headers**: base64 encoded data of either encrypted headers in private messages, or of plaintext headers in broadcast messages. Expected attributes:
+- **Message-Headers**: BASE64 encoded data of either encrypted headers in private messages, or of plaintext headers in broadcast messages. Expected attributes:
   
-  - "*value*": Base64 encoded headers payload
+  - "*value*": BASE64 encoded headers payload
   
-  - "*algorithm*": the encryption algorithm used, defaults to xchacha20poly1305, or value none if the data is not encrypted, only encoded
+  - "*algorithm*": the encryption algorithm used, defaults to "xchacha20poly1305", or value none if the data is not encrypted, only encoded
 
 - **Message-Checksum**: checksum information of the envelope headers. Since the order of headers is not guaranteed, the concatenation order used is recorded in the order attribute. Required attributes follow.
   
-  - "*algorithm*": the hashing algorithm used for calculating the checksum, defaulting to sha256
+  - "*algorithm*": the hashing algorithm used for calculating the checksum, defaulting to SHA256
   
   - "*order*": lists the concatenation order of headers before checksum calculation , separated by a colon ":" character
   
@@ -660,9 +783,9 @@ The following headers are mandatory in all messages.
   
   - "*id*": key-pair identifier, identifying the key used for signing
   
-  - "*algorithm*": indicates signing algorithm used, defaulting to *ed25519*
+  - "*algorithm*": indicates signing algorithm used, defaulting to *ED25519*
   
-  - "value": the signed checksum as a Base64 encoded value
+  - "value": the signed checksum as a BASE64 encoded value
 
 ## Conditional Headers
 
@@ -672,9 +795,10 @@ While the previous headers are mandatory in all messages, the following envelope
   
   - "*link*": the mutual connection link for the author and designated reader.
   
-  - "*fingerprint*": fingerprint of the binary value of reader's public signing key, being simply the sha256 hash of the public key. 
+  - "*fingerprint*": fingerprint of the binary value of reader's public signing key, being simply the SHA256 hash of the public key.
   
-  - "*value*": the encrypted symmetric key, Base64 encoded. 
+  - "*value*": the encrypted symmetric key, BASE64 encoded.
+
   
   - "id": key-pair identifier, identifying the reader's key used for encryption
 
@@ -688,7 +812,7 @@ While the previous headers are mandatory in all messages, the following envelope
 
 ## Content Headers
 
-Previously described envelope contains base64 encoded and encrypted content headers of private messages or just base64 encoded of broadcasts. In both cases, the content headers are contained in the value of the envelope "*Message-Headers*" header.
+Previously described envelope contains BASE64 encoded and encrypted content headers of private messages or just BASE64 encoded of broadcasts. In both cases, the content headers are contained in the value of the envelope "*Message-Headers*" header.
 
 The content headers are of the same format as the envelope headers.
 
@@ -742,7 +866,7 @@ When an author creates a message intended for specific readers and uploads it to
 
 - **Polling**: In this method, users periodically check all their contacts' mail agents to see if there are any updates or new messages waiting for them. They poll at regular intervals, either periodically or on-demand, to stay up-to-date with incoming messages. While not most efficient method, it doesn't rely on the reader's infrastructure. Moreover, it requires polling all contacts which may lead to delays in message delivery if polling intervals are not frequent enough. Email clients do have the freedom to implement their own polling logic according to their preferences however.
 
-- **Author Notifications**: This method involves the author directly notifying the designated readers about the presence of new message. When the author creates a message for specific readers, the author's mail client triggers notifications to inform the readers' mail agents about the message. Using notifications is more efficient and immediate, as readers receive notifications in real-time, reducing the need for constant polling and ensuring timely message discovery. However, ithis flow depends on the availability of the readers' mail agents.
+- **Author Notifications**: This method involves the author directly notifying the designated readers about the presence of new message. When the author creates a message for specific readers, author's mail client triggers notifications to inform the readers' mail agents about the message. Using notifications is more efficient and immediate, as readers receive notifications in real-time, reducing the need for constant polling and ensuring timely message discovery. This flow however depends on the continuous availability of readers' mail agents.
 
 Mail/HTTPS uses a combination of both methods, preferring author notifications while periodically polling the contacts.
 
@@ -882,7 +1006,7 @@ Mail/HTTPS relies exclusively on HTTPS. Insecure requests over HTTP are not perm
 
 Mail/HTTPS mandates authentication for accessing mail agents, both as an author or a reader.
 
-When authenticating as author, the mail agent permits uploading and controlling messages, retrieving notifications, account as well keys management. When authenticating as reader however, authenticated treader may list and retrieve designated messages, which also confirms pick-up by the reader's identity.
+When authenticating as author, the mail agent permits uploading and controlling messages, retrieving notifications, account as well keys management. When authenticating as reader however, authenticated reader may list and retrieve designated messages, which also confirms pick-up by the reader's identity.
 
 The same authentication method can be conveniently used to both home and remote agents as it bases itself on possession of valid private keys. Mail/HTTPS authentication bases itself on HTTP authentication [RFC7235](https://datatracker.ietf.org/doc/html/rfc7235), with own pending scheme named "**SOTN**", an acronym for **Signed-One-Time-Nonce**.
 
@@ -890,7 +1014,7 @@ The same authentication method can be conveniently used to both home and remote 
 
 The SOTN authenticating scheme expects following values to be transferred in the '**Authorization**' HTTP request header:
 
-- "**host**" for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own hostname, as well requests repeating nonce values.
+- "**host**" for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own host-name, as well requests repeating nonce values.
 
 - "**value**": a random nonce, generated locally in the mail client. The nonce is a random string of no less than 32 ASCII characters. The nonce may not repeat for at least 24 hours with the same service.
 
@@ -898,7 +1022,7 @@ The SOTN authenticating scheme expects following values to be transferred in the
 
 - "**signature**": signature using user's private signing key of the concatenated values of host and nonce in that order, without any separators. Signature is in *detached* mode. 
 
-- "**key**": the public signing key of the user, needed for verifying the signature. The public key MUST be simple Base64 encoded with padding.
+- "**key**": the public signing key of the user, needed for verifying the signature. The public key MUST be simple BASE64 encoded with padding.
 
 The advantage of the SOTN scheme is in the lack of passwords, and the use of signed nonces over HTTPS which provides robust protection against both man-in-the-middle and replay attacks.
 
@@ -930,14 +1054,14 @@ graph TD;
 Authorization: SOTN
   nonce=7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v;
   host=destination.host.tld;
-  algorithm=ed25519;
+  algorithm=ED25519;
   signature=pWHxd1/jCwkO5Ao5+sc+xDI01DWER2VAYBKCDEK/LgPBBw;
   key=ZjoCijxLNI2ts3NgQKNyxNR3E+gROmyEFsI8YUGJGZs
 ```
 
 ## Public API
 
-In Mail/HTTPS, mail agents serve a public API primarily for agent discovery as well storing of notifications and retrieval of messages. The location (hostname) of the mail agent is determined by the well-known scheme described previously in the mail agent discovery part of this document.
+In Mail/HTTPS, mail agents serve a public API primarily for agent discovery as well storing of notifications and retrieval of messages. The location (host-name) of the mail agent is determined by the well-known scheme described previously in the mail agent discovery part of this document.
 
 ### Discovery
 
