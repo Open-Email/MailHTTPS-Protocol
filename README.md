@@ -635,9 +635,9 @@ Each address may provide a profile image to be used as a thumbnail as well as a 
 
 Just as with the profile, the profile image can be served only over HTTPS. Profile images served over insecure connections are ignored.
 
-The profile image format can be one of the following: JPEG, GIF, PNG, or WebP and should not exceed 512KB in size. If this size limit is exceeded or the image is invalid, the profile image can be omitted for a placeholder in the mail client at the client's discretion.
+The profile image format can be one of the following: JPEG, GIF, PNG, or WebP and should not exceed **640KB** in size. If this size limit is exceeded or the image is invalid, the profile image can be omitted for a placeholder in the mail client at the client's discretion.
 
-The profile image should be square, of equal height and width. The recommended image size is 400x400 pixels. The mail agents do not provide alternative sizes of the profile image. It is the responsibility of mail clients to retrieve, resize, and cache the profile images.
+The profile image should be square, of equal height and width. The recommended image size is **800x800** pixels. The mail agents do not provide alternative sizes of the profile image. It is the responsibility of mail clients to retrieve, resize, and cache the profile images.
 
 ## Profile Image Location
 
@@ -1023,10 +1023,9 @@ If one client initiates key rotation and updates the signing key in the profile,
 
 To prevent simultaneous key generation conflicts, each client verifies whether the keys have already changed in the profile before suggesting a key rotation. If a key change is detected during the same operation, the rotation attempt is aborted.
 
-
 ## Replies
 
-TODO
+When replying to a message, the reply message retains the same `Subject-ID` content header. While modifying the `Subject` content header is not prohibited, it is not recommended, as in legacy email, where repeated "Re: Re: Re:..." chains accumulate. Subject changes should be reserved for corrections or adjustments within an ongoing discussion.
 
 ## Forwarding
 
@@ -1114,25 +1113,26 @@ The same authentication method can be conveniently used to both home and remote 
 
 ### SOTN Scheme
 
-The SOTN authenticating scheme expects following values to be transferred in the '**Authorization**' HTTP request header:
+The SOTN authenticating scheme expects following values to be transferred in the **`Authorization`** HTTP request header:
 
-- "**host**" for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own hostname, as well requests repeating nonce values.
+- **`host`** for which the nonce is intended. The host being authenticated MUST reject request for hosts not matching own hostname, as well requests repeating nonce values.
 
-- "**value**": a random nonce, generated locally in the mail client. The nonce is a random string of no less than 32 ASCII characters. The nonce may not repeat for at least 24 hours with the same service.
+- **`value`**: a random nonce, generated locally in the mail client. The nonce is a random string of no less than 32 ASCII characters. The nonce may not repeat for at least 24 hours with the same service.
 
-- "**algorithm**": the signing algorithm, consistent with the Mail/HTTPS signing algorithms. 
+- **`algorithm`**: the signing algorithm, consistent with the Mail/HTTPS signing algorithms.
 
-- "**signature**": signature using user's private signing key of the concatenated values of host and nonce in that order, without any separators. Signature is in *detached* mode. 
+- **`signature`**: signature using user's private signing key of the concatenated values of host and nonce in that order, without any separators. Signature is in *detached* mode.
 
-- "**key**": the public signing key of the user, needed for verifying the signature. The public key MUST be simple BASE64 encoded with padding.
+- **`key`**: the public signing key of the user, needed for verifying the signature. The public key MUST be simple BASE64 encoded with padding.
 
 The advantage of the SOTN scheme is in the lack of passwords, and the use of signed nonces over HTTPS which provides robust protection against both man-in-the-middle and replay attacks.
 
 Authentication undertakes the following steps:
 
 1. The service being authenticated checks that the provided nonce hasn't been used previously within the past 24 hours.
-2. If the service being authenticated is own mail agent, the public key is compared with the same of the user identified.
+2. If the service being authenticated is own mail agent, the public key is compared with the same of the user identified, falling back to the `Last-Signing-Key`.
 3. Finally, the signature of the nonce using the provided public key.
+
 
 ```mermaid
 graph TD;
@@ -1146,7 +1146,7 @@ graph TD;
     publicKeyMatchesLocal -- "Yes" --> verifySignature
     publicKeyMatchesLocal -- "No" --> reject
 
-    verifySignature -- "Yes" --> success["Authenticated"]
+    verifySignature -- "Yes" --> final["Authenticated"]
     verifySignature -- "No" --> reject
 ```
 
@@ -1186,7 +1186,7 @@ To determine existence of a given address **LOCAL_PART@HOST_PART** on a determin
 
 ```
 HTTPS HEAD https://MAIL_AGENT_HOSTNAME/mail/HOST_PART/LOCAL_PART
-HTTPS GET https://MAIL_AGENT_HOSTNAME/mail/HOST_PART/LOCAL_PART
+HTTPS GET  https://MAIL_AGENT_HOSTNAME/mail/HOST_PART/LOCAL_PART
 ```
 
 An *HTTP 200 OK* status response indicates presence of the address while *HTTP 404* status its absence. The returned body content is informational only.
@@ -1379,7 +1379,7 @@ If the message is unknown, *HTTP 404 Not found* response is returned.
 
 ## Private API
 
-While the public mail agent API defines interoperability between clients and mail agents of contacts, the private API defines a universal mail  clients communication with home mail agents.All private mail API requests are under the path **`/home`** and must be authenticated. In the following examples, it is assumed that the user's address is **LOCAL_PART@HOST_PART**.
+While the public mail agent API defines interoperability between clients and mail agents of contacts, the private API defines a universal mail clients communication with home mail agents. All private mail API requests are under the path **`/home`** and must be authenticated. In the following examples, it is assumed that the user's address is **LOCAL_PART@HOST_PART**.
 
 ### Authenticated Discovery
 
@@ -1389,7 +1389,11 @@ A common requirement in mail clients is to try authentication without any operat
 HTTPS HEAD /home/HOST_PART/LOCAL_PART
 ```
 
-*HTTP 200 OK* status response represents successful authentication. In case of multiple mail agents are delegated to, at least one must authenticate in order for authentication to be considered successful in mail clients. Failing mail agents should be reported to the user by mail clients.
+*HTTP 200 OK* status response represents successful authentication.
+
+In case of multiple mail agents are delegated to, at least one must authenticate in order for authentication to be considered successful in mail clients. Failing mail agents should be reported to the user by mail clients.
+
+
 
 ### Notifications
 
@@ -1476,7 +1480,6 @@ HTTPS DELETE /home/HOST_PART/LOCAL_PART/messages/MESSAGE_ID
 ```
 
 Response status *HTTP 200 OK* indicates the message has been permanently removed from the mail agent.
-
 
 
 ### Profile
