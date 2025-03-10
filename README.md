@@ -243,6 +243,7 @@ A valid signature confirms that the message authentically originates from the st
 Encryption and signing key pairs are not permanent and are periodically rotated to maintain security.
 
 During rotation:
+
 - The old public signing key remains accessible in the user's profile alongside the new key, ensuring that any still-pending messages can be properly authenticated.
 - The old encryption key does not need to stay public once the rotation is complete.
 
@@ -297,7 +298,6 @@ With Mail/HTTPS, users can adapt their communication style based on the specific
 
 ## Flow Overview
 
-
 Now that the building blocks are defined, we can see how they fit together. The basic flow of message passing from the author to the readers is illustrated below:
 
 ```mermaid
@@ -323,20 +323,24 @@ This workflow ensures user control over incoming messages—readers only receive
    Once uploaded, the author's email client notifies each reader's mail agent that a new message is available.
 
 5. Accept Notifications
+
    - By default, a reader's mail agent accepts notifications if allowed by the user's profile settings.
    - Otherwise, the system checks the link against the user's contact list stored on the mail agent.
    - If accepted, the notification is cached for the message lifetime.
 
 6. Fetch & Validate Notifications
+
    - Readers’ email clients periodically fetch notifications from their mail agents.
    - The validity and authenticity of each notification is checked.
    - Invalid notifications are discarded.
 
 7. Fetch Messages from Known Contacts
+
    - If the notification comes from a known contact (in the local address book), the reader's client requests the message directly from the author's mail agent.
    - The message is validated for authenticity, decrypted, and displayed in the reader's inbox.
 
 8. Handling Unknown Contacts
+
    - Notifications from new authors appear as contact requests, showing the author's address and profile but not the message content.
    - Accepting a contact request adds the author to local contacts and fetches any pending messages.
    - Contact requests expire automatically if ignored.
@@ -348,7 +352,7 @@ RFC5322 email addresses have a very liberal format due to historical reasons and
 
 This modernized address format, already widely used today, has stood the test of time and is officially adopted by Mail/HTTPS.
 
-Mail/HTTPS, like HTTP(S), focuses only on message transfers - delivering messages directly to the user’s device. If users wish to sync messages to an online archive, they can do so via their local email client, using any compatible service they prefer.
+Mail/HTTPS, like HTTP(S), focuses only on message transfers - delivering messages directly to the user's device. If users wish to sync messages to an online archive, they can do so via their local email client, using any compatible service they prefer.
 
 ```
 addr-spec         = local-part "@" hostname
@@ -379,12 +383,14 @@ ASCII is universally supported by keyboards worldwide, ensuring that everyone ca
 The local part of a Mail/HTTPS address (before the `@` sign) is case-insensitive and must not exceed 256 characters.
 
 Only four special characters are allowed:
+
 - Dot (`.`)
 - Dash (`-`)
 - Plus (`+`)
 - Underscore (`_`)
 
 However, the local part:
+
 - Cannot start or end with a special character
 - Cannot contain consecutive special characters
 
@@ -411,6 +417,7 @@ This approach ensures that the identities of correspondents remain protected fro
 The resulting hash is case insensitive, ensuring consistency across different implementations.
 
 The deliberate omission of a hashing salt allows for:
+
 - Efficient access rights determination between two parties.
 - Facilitated network connection discovery, as detailed in later sections of this document.
 
@@ -476,18 +483,18 @@ This reduces complexity, minimizes message loss or delays, and ensures a streaml
 
 To initiate communication, communicating parties must first discover the location of users' mail agents.
 
-SMTP-based email relies heavily on DNS records to determine the destination of an email, primarily through MX record lookups. In contrast, Mail/HTTPS reverses this process: discovery is used to determine the source location from which to retrieve messages, profile information for a given address, and where to deliver notifications. This reversal enhances authenticity validation by retrieving messages directly from the origin via strict HTTPS. DNSSEC deployment can further improve this validation.
+SMTP-based email relies heavily on DNS records to determine the destination of an email, primarily through MX record lookup. In contrast, Mail/HTTPS reverses this process: discovery is used to determine the source location from which to retrieve messages, profile information for a given address, and where to deliver notifications. This reversal enhances authenticity validation by retrieving messages directly from the origin via strict HTTPS. DNSSEC deployment can further improve this validation.
 
 Mail/HTTPS intentionally does not use pure DNS-based discovery. SMTP email predates the web and does not align with modern document-sharing concepts. Even today, direct interaction between web services and SMTP email servers is not possible, which, due to security concerns, is an advantage. Mail/HTTPS is a web-native protocol and is designed to be fully integrated into the web and browser ecosystem, ensuring security from discovery to message retrieval.
 
-To discover the responsible mail agent for an address, mail clients check for the existence of a well-known file at a predefined URI. Well-known URIs are specified in [RFC8615](https://datatracker.ietf.org/doc/html/rfc8615). For an address **LOCAL_PART@HOST_PART**, clients attempt to retrieve the Mail/HTTPS well-known file using the following failover URIs:
+To discover the responsible mail agent for an address, mail clients check for the existence of a well-known file at a predefined URI. Well-known URIs are specified in [RFC8615](https://datatracker.ietf.org/doc/html/rfc8615). For an address **LOCAL_PART@HOST_PART**, clients attempt to retrieve the Mail/HTTPS well-known file using the following fail-over URIs:
 
 ```
 HTTPS GET https://HOST_PART/.well-known/mail.txt
 HTTPS GET https://mail.HOST_PART/.well-known/mail.txt
 ```
 
-The well-known URI must be retrieved over strict HTTPS. Any contents served over an insecure connection are ignored. The configuration file is a simple text file listing the hostnames of delegated mail agents, one per line. If the file is present and valid, its contents are used to determine possible Mail/HTTPS service delegation. If multiple hostnames are listed, only the first three valid hosts are considered, in the order they appear. Invalid or unresponsive hostnames are ignored. Each line is trimmed for whitespace before being processed. Empty lines and lines beginning with a `#` are treated as comments and ignored. If no valid mail agents are discovered via the well-known file, a final fallback assumes the mail agent is located at `mail.HOST_PART`.
+The well-known URI must be retrieved over strict HTTPS. Any contents served over an insecure connection are ignored. The configuration file is a simple text file listing the hostnames of delegated mail agents, one per line. If the file is present and valid, its contents are used to determine possible Mail/HTTPS service delegation. If multiple hostnames are listed, only the first three valid hosts are considered, in the order they appear. Invalid or unresponsive hostnames are ignored. Each line is trimmed for white space before being processed. Empty lines and lines beginning with a `#` are treated as comments and ignored. If no valid mail agents are discovered via the well-known file, a final fallback assumes the mail agent is located at `mail.HOST_PART`.
 
 Before a selected `MAIL_AGENT_HOSTNAME` is considered a valid mail agent for `HOST_PART`, it must respond with HTTP `200 OK` to a delegation check:
 
@@ -535,6 +542,7 @@ A standard public email profile must include the following essential fields, whi
 - **`Name`**: Represents the display name associated with the address and helps identify the user or entity behind the address. Unlike email addresses, UTF-8 characters are allowed.
 
 - **`Signing-Key`**: Provides the user's public signing key, used to verify message authenticity and authenticate the user. The signing key contains the following attributes:
+
   - **`id`**: Unique identifier for the key pair (same for public and private key).
   - **`algorithm`**: Specifies the signing algorithm (default is assumed if omitted).
   - **`value`**: BASE64-encoded public signing key data.
@@ -878,7 +886,6 @@ While the previous headers are mandatory in all messages, the following envelope
   
   - **`value`**: the encrypted symmetric key, BASE64 encoded.
 
-  
   - **`id`**: key-pair identifier, identifying the reader's key used for encryption
 
 - **`Message-Encryption`**: a future-proofing header holding the encryption information used to encrypt the payload, present only on private messages. Contains a single attribute:
@@ -1033,11 +1040,23 @@ TODO
 
 ## Threading
 
-TODO
+Instead of relying on references to other messages, OpenEmail simplifies threading by introducing the `Subject-ID` content header. Replies inherit the same `Subject-ID`, allowing clients to group messages by topic based on this identifier and the message timestamps.
 
 ## Broadcasting
 
-TODO
+Instead of sending individual copies to each recipient, OpenEmail handles broadcasting like RSS. Users can upload a public broadcast message, which readers retrieve on demand.
+
+By default, OpenEmail clients automatically check for broadcast messages from contacts. This setting is configurable per contact and defaults to enabled.
+
+Unlike private messages, broadcast messages are not encrypted—only signed for authenticity.
+
+### Re-broadcasting messages
+
+A received broadcast message can be re-broadcasted by the reader, acting as a form of public forwarding. In this process, the original sender remains preserved, but the message jumps networks as the reader also becomes a publisher, further distributing the content.
+
+Re-broadcasts can include additional content from the publisher, serving as a comment on the original message.
+
+The mode of including the re-broadcasted message is exactly the same as for forwarding.
 
 ### Direct Public Access
 
@@ -1047,9 +1066,7 @@ TODO
 
 TODO
 
-### Re-broadcasting messages
 
-TODO
 
 ### Public Replies
 
@@ -1125,14 +1142,13 @@ The SOTN authenticating scheme expects following values to be transferred in the
 
 - **`key`**: the public signing key of the user, needed for verifying the signature. The public key MUST be simple BASE64 encoded with padding.
 
-The advantage of the SOTN scheme is in the lack of passwords, and the use of signed nonces over HTTPS which provides robust protection against both man-in-the-middle and replay attacks.
+The advantage of the SOTN scheme is in the lack of passwords, and the use of signed nonce over HTTPS which provides robust protection against both man-in-the-middle and replay attacks.
 
 Authentication undertakes the following steps:
 
 1. The service being authenticated checks that the provided nonce hasn't been used previously within the past 24 hours.
 2. If the service being authenticated is own mail agent, the public key is compared with the same of the user identified, falling back to the `Last-Signing-Key`.
 3. Finally, the signature of the nonce using the provided public key.
-
 
 ```mermaid
 graph TD;
@@ -1393,8 +1409,6 @@ HTTPS HEAD /home/HOST_PART/LOCAL_PART
 
 In case of multiple mail agents are delegated to, at least one must authenticate in order for authentication to be considered successful in mail clients. Failing mail agents should be reported to the user by mail clients.
 
-
-
 ### Notifications
 
 #### List
@@ -1421,8 +1435,6 @@ Email clients must:
 
 - Cache notifications locally to ensure same notifications are not repeatedly acted upon
 
-
-
 ### Messages
 
 #### List
@@ -1440,7 +1452,7 @@ The response is a simple list of message identifiers (*MESSAGE_ID*), separated b
 Each of the message identifiers *MESSAGE_ID* can be used for retrieving the relevant message from a path below.
 
 ```
-HTTPS GET /mail/HOST_PART/LOCAL_PART/link/LINK/messages/MESSAGE_ID
+HTTPS GET /home/HOST_PART/LOCAL_PART/link/LINK/messages/MESSAGE_ID
 ```
 
 Successful *HTTP 200 OK* status response contains reserved Mail/HTTPS headers and the response body contains the message payload.
@@ -1480,7 +1492,6 @@ HTTPS DELETE /home/HOST_PART/LOCAL_PART/messages/MESSAGE_ID
 ```
 
 Response status *HTTP 200 OK* indicates the message has been permanently removed from the mail agent.
-
 
 ### Profile
 
@@ -1530,11 +1541,21 @@ The list call retrieves all user's connection identifiers, which implies all use
 HTTPS GET /home/HOST_PART/LOCAL_PART/links
 ```
 
-The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the encrypted email address of the  contact.
+The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the encrypted data of the contact.
+
+The encrypted data contains either:
+
+- email address of the link by itself, testable by the absence of the equal sign (`=`), or
+
+- attributes as key-value pairs, separated by semi columns with possible attributes:
+
+  - `address`: required attribute containing the email address of the link.
+  - `broadcasts`: optional attribute representing user setting whether link broadcasts are fetched. Possible values are `Yes` (default) and `No`. If not present, the attribute assumes its default value.
+
 
 #### Store
 
-The store call saves the connection identifier link (*LINK*) on the mail agent of the authenticating user. The request body contains encrypted email address of the respective link contact.
+The store call saves the connection identifier link (*LINK*) on the mail agent of the authenticating user. The request body contains encrypted email address or attributes data of the respective link contact.
 
 The assumed encryption method is anonymous asymmetric encryption. However, users can configure a different method in their email clients, provided that all of their clients use the same encryption scheme.
 
