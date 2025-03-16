@@ -1543,11 +1543,7 @@ HTTPS GET /home/HOST_PART/LOCAL_PART/links
 
 The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the encrypted data of the contact.
 
-The encrypted data contains either:
-
-- email address of the link by itself, testable by the absence of the equal sign (`=`), or
-
-- attributes as key-value pairs, separated by semi columns with possible attributes:
+The encrypted data contains attributes as key-value pairs, separated by semi columns with possible attributes:
 
   - `address`: required attribute containing the email address of the link.
   - `broadcasts`: optional attribute representing user setting whether link broadcasts are fetched. Possible values are `Yes` (default) and `No`. If not present, the attribute assumes its default value.
