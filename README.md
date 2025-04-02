@@ -494,6 +494,8 @@ HTTPS GET https://HOST_PART/.well-known/mail.txt
 HTTPS GET https://mail.HOST_PART/.well-known/mail.txt
 ```
 
+If the response is an HTTP redirect, it can be followed, taking care to detect and avoid circular or infinite redirect loops.
+
 The well-known URI must be retrieved over strict HTTPS. Any contents served over an insecure connection are ignored. The configuration file is a simple text file listing the hostnames of delegated mail agents, one per line. If the file is present and valid, its contents are used to determine possible Mail/HTTPS service delegation. If multiple hostnames are listed, only the first three valid hosts are considered, in the order they appear. Invalid or unresponsive hostnames are ignored. Each line is trimmed for white space before being processed. Empty lines and lines beginning with a `#` are treated as comments and ignored. If no valid mail agents are discovered via the well-known file, a final fallback assumes the mail agent is located at `mail.HOST_PART`.
 
 Before a selected `MAIL_AGENT_HOSTNAME` is considered a valid mail agent for `HOST_PART`, it must respond with HTTP `200 OK` to a delegation check:
