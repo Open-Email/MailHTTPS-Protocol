@@ -455,7 +455,7 @@ An example of given data follows, illustrating the symmetrical property of such 
 ```
 GenerateConnectionIdentifier('user2@Domain2.tld', 'USER1@domain1.tld') ==
 GenerateConnectionIdentifier('user1@domain1.tld', 'user2@domain2.tld') == 
-'c841f291d745ae1d3af3bbd4f86e1c184c6c1e6cdd8ed77a64316e12ed0f6a19'
+'c586af64026edfaff36c1e3beb161b9e67b95ce665ff777b83c68382132c8c98'
 ```
 
 Since the function normalizes addresses by converting them to lowercase, trimming spaces, and ordering alphabetically, the same unique identifier is produced regardless of input order.
@@ -771,7 +771,7 @@ Embedded message content is presented to the reader in its raw, text form, witho
 
 Mail/HTTPS forbids HTML and similar markup languages that may load remote content or mask link destinations. Any remote content can instead be easily linked to or included as an attachment.
 
-Clients may support a subset of MarkDown while removing support for remote content (such as images) and masked links. However, clients may allow BASE64-encoded images within MarkDown bodies. The recommended maximum size for BASE64-encoded image sources is 256KB, though clients may enforce their own limits.
+Clients may support a subset of Markdown while removing support for remote content (such as images) and masked links. However, clients may allow BASE64-encoded images within Markdown bodies. The recommended maximum size for BASE64-encoded image sources is 256KB, though clients may enforce their own limits.
 
 ## Files (Attachments)
 
@@ -880,7 +880,7 @@ The following headers are mandatory in all messages.
 
 While the previous headers are mandatory in all messages, the following envelope headers depend on the nature of the message.
 
-- **`Message-Access`**: this header is present only on private messages and it distinguishes message from broadcasts. It contains a list of attribute groups containing connection identifiers (links), public keys and encrypted passwords for determining access rights. Each group identifies a single reader. As standard HTTP header attributes, they are are separated using a semi-column within the group while groups are coma separated. Each message has at least one access group for the author. Each reader has own access group and each group includes the attributes below.
+- **`Message-Access`**: this header is present only on private messages and it distinguishes message from broadcasts. It contains a list of attribute groups containing connection identifiers (links), public keys and encrypted passwords for determining access rights. Each group identifies a single reader. As standard HTTP header attributes, they are are separated using a semi-colon within the group while groups are coma separated. Each message has at least one access group for the author. Each reader has own access group and each group includes the attributes below.
   
   - **`link`**: the mutual connection link for the author and designated reader.
   
@@ -952,7 +952,7 @@ The following content headers depend on the message nature.
 
 When an author creates a message intended for specific readers and uploads it to own home agent, the readers are informed of the new message's presence. This can be accomplished through two methods.
 
-- **Polling**: In this method, users periodically check all their contacts' mail agents to see if there are any updates or new messages waiting for them. They poll at regular intervals, either periodically or on-demand, to stay up-to-date with incoming messages. While not most efficient method, it doesn't rely on the reader's infrastructure. Moreover, it requires polling all contacts which may lead to delays in message delivery if polling intervals are not frequent enough. Email clients do have the freedom to implement their own polling logic according to their preferences however.
+- **Polling**: In this method, users periodically check all their contacts' mail agents to see if there are any updates or new messages waiting for them. They poll at regular intervals, either periodically or on-demand, to stay up-to-date with incoming messages. While not the most efficient method, it doesn't rely on the reader's infrastructure. Moreover, it requires polling all contacts which may lead to delays in message delivery if polling intervals are not frequent enough. Email clients do have the freedom to implement their own polling logic according to their preferences however.
 
 - **Author Notifications**: This method involves the author directly notifying the designated readers about the presence of new message. When the author creates a message for specific readers, author's mail client triggers notifications to inform the readers' mail agents about the message. Using notifications is more efficient and immediate, as readers receive notifications in real-time, reducing the need for constant polling and ensuring timely message discovery. This flow however depends on the continuous availability of readers' mail agents.
 
@@ -976,7 +976,7 @@ If the reader configures their home agent to accept notifications exclusively fr
 
 Upon accepting a notification, mail agents are expected to assign a unique, local identifier to each new notification. The notification identifier is generated locally after the acceptance of the notification and cannot be part of the incoming notification. Identifiers help mail clients keep state of already seen notifications.
 
-The notification identifier is an alpha-numeric string of no more than 32 characters. The identifier may be a counter or generated random string and is unique locally for each notification of a given link.
+The notification identifier is an alphanumeric string of no more than 32 characters. The identifier may be a counter or generated random string and is unique locally for each notification of a given link.
 
 ## Lifetime
 
