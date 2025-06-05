@@ -1110,7 +1110,7 @@ Envelope lists all resulting readers after the address expansions. There are no 
 
 ### Content Headers
 
-The 'Readers' content header document the address expansion by following the expanded address by a column and semi column separated list of expanded addresses. For example:
+The 'Readers' content header documents the address expansion by following the expanded address by a colon and semicolon separated list of expanded addresses. For example:
 
 ```
 Readers: reader1@domain1.tld, reader2@domain2.tld, expanded.reader@domain3.tld:reader4@somewhereelse.tld;reader5@somewhereelse2.tld
@@ -1545,7 +1545,7 @@ HTTPS GET /home/HOST_PART/LOCAL_PART/links
 
 The response consists of a list where each entry is on a new line. Each entry contains two values separated by a comma: a link and the encrypted data of the contact.
 
-The encrypted data contains attributes as key-value pairs, separated by semi columns with possible attributes:
+The encrypted data contains attributes as key-value pairs, separated by semicolons with possible attributes:
 
   - `address`: required attribute containing the email address of the link.
   - `broadcasts`: optional attribute representing user setting whether link broadcasts are fetched. Possible values are `Yes` (default) and `No`. If not present, the attribute assumes its default value.
